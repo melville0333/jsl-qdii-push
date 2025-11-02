@@ -100,8 +100,19 @@ class JisiluQDIIDataFetcher:
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--window-size=1920,1080')
+        # 添加Chrome二进制路径和chromedriver路径以适应GitHub Actions环境
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--disable-logging')
+        chrome_options.add_argument('--disable-web-security')
+        chrome_options.add_argument('--allow-running-insecure-content')
+        chrome_options.add_argument('--ignore-certificate-errors')
+        chrome_options.binary_location = '/usr/bin/chromium-browser'
         
-        self.driver = webdriver.Chrome(options=chrome_options)
+        # 指定chromedriver路径
+        chromedriver_path = '/usr/local/bin/chromedriver'
+        
+        self.driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
         
 
     
