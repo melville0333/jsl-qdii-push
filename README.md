@@ -64,6 +64,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y chromium-browser chromium-chromedriver
+        # 安全地创建符号链接，如果已存在则先删除
+        sudo rm -f /usr/local/bin/chromedriver
+        sudo rm -f /usr/bin/google-chrome
         sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
         sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
     
@@ -74,6 +77,12 @@ jobs:
       run: |
         python 7.py
 ```
+
+### GitHub Actions 环境说明
+
+GitHub Actions使用Ubuntu环境运行此工作流，系统中预装了chromium-browser和chromium-chromedriver。工作流中的安装步骤会确保Chrome浏览器和驱动程序正确配置。
+
+如果遇到"File exists"错误，工作流会先删除已存在的符号链接再重新创建，以确保环境配置正确。
 
 ### 3. 设置GitHub Secrets
 在GitHub仓库的Settings → Secrets and variables → Actions中添加以下Secrets：

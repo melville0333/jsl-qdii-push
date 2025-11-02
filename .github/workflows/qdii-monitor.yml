@@ -34,6 +34,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y chromium-browser chromium-chromedriver
+        # 安全地创建符号链接，如果已存在则先删除
+        sudo rm -f /usr/local/bin/chromedriver
+        sudo rm -f /usr/bin/google-chrome
         sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
         sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
     

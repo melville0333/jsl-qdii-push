@@ -112,6 +112,15 @@ class JisiluQDIIDataFetcher:
         # 指定chromedriver路径
         chromedriver_path = '/usr/local/bin/chromedriver'
         
+        # 检查chromedriver是否存在，如果不存在则使用系统默认路径
+        import os
+        if not os.path.exists(chromedriver_path):
+            chromedriver_path = '/usr/lib/chromium-browser/chromedriver'
+            if not os.path.exists(chromedriver_path):
+                # 如果都不存在，则不指定路径，让系统自动查找
+                self.driver = webdriver.Chrome(options=chrome_options)
+                return
+        
         self.driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
         
 
