@@ -5,6 +5,7 @@ import time
 import logging
 import schedule
 import os
+import sys
 from datetime import datetime
 from typing import List, Dict, Optional
 from selenium import webdriver
@@ -109,19 +110,29 @@ class JisiluQDIIDataFetcher:
         chrome_options.add_argument('--ignore-certificate-errors')
         chrome_options.binary_location = '/usr/bin/chromium-browser'
         
-        # 指定chromedriver路径
-        chromedriver_path = '/usr/local/bin/chromedriver'
-        
-        # 检查chromedriver是否存在，如果不存在则使用系统默认路径
+        # 使用Service类指定chromedriver路径（适用于Selenium 4.x）
+        from selenium.webdriver.chrome.service import Service
         import os
-        if not os.path.exists(chromedriver_path):
-            chromedriver_path = '/usr/lib/chromium-browser/chromedriver'
-            if not os.path.exists(chromedriver_path):
-                # 如果都不存在，则不指定路径，让系统自动查找
-                self.driver = webdriver.Chrome(options=chrome_options)
-                return
         
-        self.driver = webdriver.Chrome(executable_path=chromedriver_path, options=chrome_options)
+        # 尝试不同的chromedriver路径
+        chromedriver_paths = [
+            '/usr/local/bin/chromedriver',
+            '/usr/lib/chromium-browser/chromedriver',
+            '/usr/bin/chromedriver'
+        ]
+        
+        service = None
+        for path in chromedriver_paths:
+            if os.path.exists(path):
+                service = Service(executable_path=path)
+                break
+        
+        # 如果找到有效的chromedriver路径，则使用Service类
+        if service:
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+        else:
+            # 如果都不存在，则不指定路径，让系统自动查找
+            self.driver = webdriver.Chrome(options=chrome_options)
         
 
     
@@ -282,14 +293,25 @@ class QDIIMonitor:
         self.fetcher = JisiluQDIIDataFetcher()
         self.notifier = WPushNotifier(config)
         
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler('qdii_wpush.log', encoding='utf-8'),
-                logging.StreamHandler()
-            ]
-        )
+        # 处理Windows系统上的编码问题
+        if sys.platform.startswith('win'):
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(levelname)s - %(message)s',
+                handlers=[
+                    logging.FileHandler('qdii_wpush.log', encoding='utf-8'),
+                    logging.StreamHandler(sys.stdout)
+                ]
+            )
+        else:
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(levelname)s - %(message)s',
+                handlers=[
+                    logging.FileHandler('qdii_wpush.log', encoding='utf-8'),
+                    logging.StreamHandler(sys.stdout)
+                ]
+            )
         self.logger = logging.getLogger(__name__)
     
     def format_wpush_message(self, fund_data: List[Dict]) -> str:
